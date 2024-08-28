@@ -1,0 +1,6 @@
+.env
+.git
+/data/db/*
+/data/downloads/*
+/data/images/*
+/data/rabbitmq/*
