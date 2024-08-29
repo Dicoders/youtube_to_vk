@@ -1,4 +1,8 @@
-FROM golang:1.20-alpine AS builder
+FROM golang:1.23-alpine AS builder
+
+RUN apk update && apk add --no-cache \
+    gcc \
+    musl-dev
 
 WORKDIR /app
 
@@ -28,6 +32,12 @@ RUN apk update && apk add --no-cache \
     py3-pip \
     py3-virtualenv \
     ffmpeg
+
+
+RUN python3 -m venv /env
+ENV PATH="/env/bin:$PATH"
+
+RUN pip install --upgrade pip && pip install yt-dlp
 
 
 COPY --from=builder /app /app

@@ -21,7 +21,8 @@ func init() {
         Heartbeat: 10 * time.Second,    // Интервал heartbeat
         Dial: amqp.DefaultDial(30 * time.Second), // Keepalive
     }
-    conn, err := amqp.DialConfig(fmt.Sprintf(
+    var err error
+    conn, err = amqp.DialConfig(fmt.Sprintf(
         "amqp://%s:%s@%s:%s/%s",
         os.Getenv("RABBITMQ_USER"),
         os.Getenv("RABBITMQ_PASS"),

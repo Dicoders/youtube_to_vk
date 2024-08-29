@@ -5,3 +5,7 @@
 /data/downloads/*
 /data/images/*
 /data/rabbitmq/*
+!/data/db/.gitkeep
+!/data/downloads/.gitkeep
+!/data/images/.gitkeep
+!/data/rabbitmq/.gitkeep
