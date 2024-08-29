@@ -4,6 +4,7 @@ WORKDIR /app
 
 COPY . .
 
+ENV CGO_ENABLED=1
 RUN go build -o feed_parser feed_parser.go
 RUN go build -o downloader downloader.go
 RUN go build -o image_downloader image_downloader.go
