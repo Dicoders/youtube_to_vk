@@ -8,6 +8,7 @@ import (
     "strings"
     "encoding/json"
     "app/share"
+    "fmt"
 )
 
 const downloadFolder = "./downloads"
@@ -51,7 +52,7 @@ func processMessage(video share.Video) (share.Video, error) {
     data := url.Values{}
     data.Set("owner_id", vkOwnerID)
     data.Set("from_group", "1")
-    data.Set("attachments", "video" + vkOwnerID + "_" + video.VideoID)
+    data.Set("attachments", fmt.Sprintf("video%s_%d", vkOwnerID, video.VkVideoID))
 
     r, err := http.NewRequest("POST", postWallURL, strings.NewReader(data.Encode()))
     r.Header.Add("Authorization", "Bearer " + vkAccessToken)
