@@ -11,6 +11,7 @@ COPY . .
 ENV CGO_ENABLED=1
 RUN go build -o feed_parser feed_parser.go
 RUN go build -o downloader downloader.go
+RUN go build -o wall_poster wall_poster.go
 RUN go build -o image_downloader image_downloader.go
 RUN go build -o uploader uploader.go
 RUN go build -o clearer clearer.go

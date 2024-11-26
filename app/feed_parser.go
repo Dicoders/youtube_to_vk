@@ -52,7 +52,8 @@ func createTable(db *sql.DB) {
         video_id TEXT NOT NULL UNIQUE,
         title TEXT,
         description TEXT,
-        vk_video_id INTEGER
+        vk_video_id INTEGER,
+        vk_post_id INTEGER
     );`
 
     _, err := db.Exec(createTableSQL)
