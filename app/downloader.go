@@ -38,7 +38,7 @@ func processMessage(video share.Video) (share.Video, error) {
 
     downloadPath := filepath.Join(downloadFolder, fmt.Sprintf("%s.%%(ext)s", video.VideoID))
 
-    cmd := exec.Command("yt-dlp", "-f", "bv+ba/b" ,"-o", downloadPath, "-N 10", "-R 100", videoURL)
+    cmd := exec.Command("yt-dlp", "-f", "bv+ba/b" ,"-o", downloadPath, "-N 10", "-R 5", "--cookies /app/cookies", videoURL)
     cmd.SysProcAttr = &syscall.SysProcAttr{
         Setpgid: true, // Устанавливаем процесс в новую группу процессов
     }
