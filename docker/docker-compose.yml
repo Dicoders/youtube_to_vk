@@ -14,6 +14,9 @@ services:
             - ../data/:/app/data/
             - ../docker/supervisord.conf:/etc/supervisord.conf
             - ../docker/crontab:/etc/crontabs/root
+        depends_on:
+            rabbitmq:
+                condition: service_healthy
     rabbitmq:
         image: rabbitmq:3-management
         hostname: rabbitmq
