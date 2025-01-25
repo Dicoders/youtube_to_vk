@@ -76,6 +76,7 @@ $channel->basic_consume($sourceQueue, '', false, false, false, false,
             //todo отправить сообщение об ошибке
         }
 
+        $lastPercent = 0.0;
         $client2 = new Client();
         $response = $client2->post($upload_url, [
             'multipart' => [
@@ -89,10 +90,12 @@ $channel->basic_consume($sourceQueue, '', false, false, false, false,
                     'contents' => 'value',
                 ],
             ],
-            'progress' => function ($downloadTotal, $downloaded, $uploadTotal, $uploaded) {
+            'progress' => function ($downloadTotal, $downloaded, $uploadTotal, $uploaded) use (&$lastPercent) {
                 if ($uploadTotal > 0) {
-                    $percent = ($uploaded / $uploadTotal) * 100;
-                    echo "Uploaded: $percent%\n";
+                    $percent = round(($uploaded / $uploadTotal) * 100, 1);
+                    if ($percent !== $lastPercent) {
+                        echo "Uploaded: $percent%\r";
+                    }
                 }
             },
         ]);

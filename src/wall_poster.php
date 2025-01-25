@@ -30,20 +30,20 @@ $channel->basic_consume($sourceQueue, '', false, false, false, false,
         $client = new Client([
             'base_uri' => 'https://api.vk.com',
             'headers' => [
-                'Authorization' => 'Bearer ' . $_ENV['VK_ACCESS_TOKEN'],
+                'Authorization' => 'Bearer ' . $_ENV['VK_ACCESS_USER_TOKEN'],
                 'Content-Type' => 'application/x-www-form-urlencoded',
             ]
         ]);
         $response = $client->post('/method/wall.post', [
             'form_params' => [
-                'v' => '5.119',
+                'v' => '5.199',
                 'owner_id' => $_ENV['VK_OWNER_ID'],
-                'from_group' => '1',
+                'from_group' => 1,
                 'attachments' => sprintf('video%s_%d', $_ENV['VK_OWNER_ID'], $body['vk_video_id']),
             ],
         ]);
-
         if ($response->getStatusCode() !== 200) {
+            echo 'Ошибка создания поста' . $response->getBody()->getContents();
             sleep(3600);
             return;
             //todo отправить сообщение об ошибке
