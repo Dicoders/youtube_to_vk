@@ -37,7 +37,7 @@ $channel->basic_consume($sourceQueue, '', false, false, false, false,
         ]);
         $response = $client->post('/method/video.save', [
             'form_params' => [
-                'v' => '5.119',
+                'v' => '5.199',
                 'name' => $body['title'],
                 'description' => $body['description'],
                 'group_id' => $_ENV['VK_GROUP_ID'],
