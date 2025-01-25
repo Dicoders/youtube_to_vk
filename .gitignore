@@ -10,3 +10,4 @@
 !/data/downloads/.gitkeep
 !/data/images/.gitkeep
 !/data/rabbitmq/.gitkeep
+vendor

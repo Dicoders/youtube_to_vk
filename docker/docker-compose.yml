@@ -1,0 +1,38 @@
+services:
+    youtube_to_vk:
+        build:
+            context: ../
+            dockerfile: docker/Dockerfile
+        restart: unless-stopped
+        container_name: "youtube_to_vk"
+        env_file:
+            - ./../.env
+        networks:
+            - youtube-to-vk-network
+        volumes:
+            - ../src:/app/src
+            - ../data/:/app/data/
+            - ../docker/supervisord.conf:/etc/supervisord.conf
+            - ../docker/crontab:/etc/crontabs/root
+    rabbitmq:
+        image: rabbitmq:3-management
+        hostname: rabbitmq
+        container_name: rabbitmq
+        restart: always
+        ports:
+            - "5672:5672"
+            - "15672:15672"
+        env_file:
+            - ./../.env
+        volumes:
+            - ../data/rabbitmq:/var/lib/rabbitmq
+        networks:
+            - youtube-to-vk-network
+        healthcheck:
+            test: ["CMD-SHELL", "rabbitmqctl status || exit 1"]
+            interval: 10s
+            timeout: 10s
+            retries: 10
+
+networks:
+    youtube-to-vk-network:

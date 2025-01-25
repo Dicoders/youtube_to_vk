@@ -1,1 +1,0 @@
-35 * * * * (cd /app/ && ./feed_parser)
