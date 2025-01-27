@@ -53,6 +53,14 @@ $channel->basic_consume($sourceQueue, '', false, false, false, false,
         $content = $response->getBody()->getContents();
         $content = json_decode($content, true);
 
+        if (isset($content['error'])) {
+            echo $content['error']['error_msg'];
+            sleep(3600);
+            return;
+            //todo отправить сообщение об ошибке
+        }
+
+
         $vk_video_id = $content['response']['video_id'];
         $upload_url = $content['response']['upload_url'];
 
