@@ -45,7 +45,7 @@ $xml = simplexml_load_file($url);
 foreach ($xml->entry as $item) {
     $id = str_replace('yt:video:', '', (string)$item->id[0]);
     $title = $item->title . ' 4k 60fps REUP';
-    $description = $item->children('http://search.yahoo.com/mrss/')->group->description[0];
+    $description = (string)((array)($item->children('http://search.yahoo.com/mrss/')->group->description))[0];
 
     $query = $db->prepare('select id from videos where video_id=:video_id');
     $query->bindValue(':video_id', $id);
