@@ -2,15 +2,6 @@
 
 $db = new \PDO('sqlite:' . 'data/db/videos.db');
 
-$db->exec("
-            CREATE TABLE IF NOT EXISTS queue (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                payload TEXT NOT NULL,
-                processed INTEGER DEFAULT 0,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            );
-        ");
-
 //Создаем базу если её нет
 $db->exec('CREATE TABLE IF NOT EXISTS videos (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
