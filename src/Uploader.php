@@ -1,32 +1,13 @@
 <?php
 
-
 use GuzzleHttp\Client;
-use PhpAmqpLib\Connection\AMQPStreamConnection;
-use PhpAmqpLib\Message\AMQPMessage;
 
-require(dirname(__FILE__) . '/../vendor/autoload.php');
+class Uploader implements IWorker
+{
 
-$sourceQueue = 'upload';
-$destinationQueue = 'wall_post';
-$dir_save = '/app/data/downloads/';
-
-$connection = new AMQPStreamConnection(
-    $_ENV['RABBITMQ_HOST'],
-    $_ENV['RABBITMQ_PORT'],
-    $_ENV['RABBITMQ_DEFAULT_USER'],
-    $_ENV['RABBITMQ_DEFAULT_PASS'],
-    $_ENV['RABBITMQ_DEFAULT_VHOST'],
-);
-
-$channel = $connection->channel();
-$channel->queue_declare($sourceQueue, false, true, false, false);
-$channel->queue_declare($destinationQueue, false, true, false, false);
-$channel->basic_qos(null, 1, null);
-$channel->basic_consume($sourceQueue, '', false, false, false, false,
-    function ($msg) use ($destinationQueue, $dir_save) {
-        $body = $msg->body;
-        $body = json_decode($body, true);
+    public function work(array $task): array
+    {
+        $dir_save = '/app/data/downloads/';
 
         $client = new Client([
             'base_uri' => 'https://api.vk.com',
@@ -38,28 +19,22 @@ $channel->basic_consume($sourceQueue, '', false, false, false, false,
         $response = $client->post('/method/video.save', [
             'form_params' => [
                 'v' => '5.199',
-                'name' => $body['title'],
-                'description' => $body['description'],
+                'name' => $task['title'],
+                'description' => $task['description'],
                 'group_id' => $_ENV['VK_GROUP_ID'],
             ],
         ]);
 
         if ($response->getStatusCode() !== 200) {
-            sleep(3600);
-            return;
-            //todo отправить сообщение об ошибке
+            throw new Exception('Ошибка получения ссылки для загрузки видео');
         }
 
         $content = $response->getBody()->getContents();
         $content = json_decode($content, true);
 
         if (isset($content['error'])) {
-            echo $content['error']['error_msg'];
-            sleep(3600);
-            return;
-            //todo отправить сообщение об ошибке
+            throw new Exception($content['error']['error_msg']);
         }
-
 
         $vk_video_id = $content['response']['video_id'];
         $upload_url = $content['response']['upload_url'];
@@ -69,7 +44,7 @@ $channel->basic_consume($sourceQueue, '', false, false, false, false,
         $formats = ['mp4', 'mov', 'avi', 'wmv', 'flv', '3gp', 'webm', 'mkv'];
 
         foreach ($formats as $format) {
-            $file_name = $body['video_id'] . '.' . $format;
+            $file_name = $task['video_id'] . '.' . $format;
             $path = $dir_save . $file_name;
             $exist = file_exists($path);
             if ($exist) {
@@ -79,9 +54,7 @@ $channel->basic_consume($sourceQueue, '', false, false, false, false,
         }
 
         if (is_null($path_file)) {
-            sleep(3600);
-            return;
-            //todo отправить сообщение об ошибке
+            return []; //не найдено видео для загрузки в ВК
         }
 
         $lastPercent = 0.0;
@@ -109,21 +82,18 @@ $channel->basic_consume($sourceQueue, '', false, false, false, false,
         ]);
 
         if (!in_array($response->getStatusCode(), [200, 201])) {
-            sleep(3600);
-            //todo отправить сообщение об ошибке
+            throw new Exception('Ошибка загрузки видео в ВК. Статус ' . $response->getStatusCode());
         }
 
-        $body['vk_video_id'] = $vk_video_id;
-
-        $msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
-
-        $msg_resp = new AMQPMessage(json_encode($body, JSON_UNESCAPED_UNICODE), ['delivery_mode' => AMQPMessage::DELIVERY_MODE_PERSISTENT]);
+        $task['vk_video_id'] = $vk_video_id;
 
         //Отправляем сообщение
-        $msg->delivery_info['channel']->basic_publish($msg_resp, '', $destinationQueue);
+        return [WallPoster::class, $task];
+    }
 
-    });
-while (count($channel->callbacks)) {
-    $channel->wait();
+    public function getPriority(): int
+    {
+        return 10;
+    }
 }
 

@@ -2,7 +2,7 @@
     "name": "dicoders/youtube_to_vk",
     "autoload": {
         "psr-4": {
-            "Dicoders\\youtube_to_vk\\": "src/"
+            "": "src/"
         }
     },
     "authors": [
@@ -12,7 +12,9 @@
         }
     ],
     "require": {
-        "php-amqplib/php-amqplib": "^3.7",
-        "guzzlehttp/guzzle": "^7.9"
+        "guzzlehttp/guzzle": "^7.9",
+        "ext-sqlite3": "*",
+        "ext-simplexml": "*",
+      "ext-pdo": "*"
     }
 }

@@ -1,1 +1,2 @@
 35 * * * * php /app/src/feed_parser.php
+0,30 * * * * php /app/src/worker.php

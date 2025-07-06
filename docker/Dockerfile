@@ -7,7 +7,6 @@ RUN apk update && apk add --no-cache \
     curl \
     git \
     openrc \
-    supervisor \
     gcc \
     musl-dev \
     python3 \
@@ -37,10 +36,8 @@ RUN pip install --upgrade pip && pip install yt-dlp
 
 RUN wget https://getcomposer.org/installer -O composer-setup.php
 RUN php composer-setup.php --install-dir=/usr/local/bin --filename=composer
-RUN composer update
+RUN composer install
 
-COPY ./docker/crontab /etc/crontabs/root
-COPY ./docker/supervisord.conf /etc/supervisord.conf
+COPY ./docker/root.cron /etc/crontabs/root
 
-
-CMD ["/usr/bin/supervisord"]
+CMD /usr/sbin/crond -f -L /var/log/cron.log && tail -f /var/log/cron.log
