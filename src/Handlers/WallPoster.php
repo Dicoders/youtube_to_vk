@@ -1,7 +1,9 @@
 <?php
 
-use GuzzleHttp\Client;
+namespace App\Handlers;
 
+use Exception;
+use GuzzleHttp\Client;
 
 
 class WallPoster implements IWorker
@@ -40,7 +42,7 @@ class WallPoster implements IWorker
 
     public function getPriority(): int
     {
-        return 20;
+        return 30;
     }
 }
 

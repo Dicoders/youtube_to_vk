@@ -1,20 +1,20 @@
 {
-    "name": "dicoders/youtube_to_vk",
-    "autoload": {
-        "psr-4": {
-            "": "src/"
-        }
-    },
-    "authors": [
-        {
-            "name": "Дмитрий Гладких",
-            "email": "Dicoder@ya.ru"
-        }
-    ],
-    "require": {
-        "guzzlehttp/guzzle": "^7.9",
-        "ext-sqlite3": "*",
-        "ext-simplexml": "*",
-      "ext-pdo": "*"
+  "name": "dicoders/youtube_to_vk",
+  "autoload": {
+    "psr-4": {
+      "App\\": "src/"
     }
+  },
+  "authors": [
+    {
+      "name": "Дмитрий Гладких",
+      "email": "Dicoder@ya.ru"
+    }
+  ],
+  "require": {
+    "guzzlehttp/guzzle": "^7.9",
+    "ext-sqlite3": "*",
+    "ext-simplexml": "*",
+    "ext-pdo": "*"
+  }
 }

@@ -1,5 +1,9 @@
 <?php
 
+namespace App\Handlers;
+
+use Exception;
+
 class Downloader implements IWorker
 {
     public function work(array $task): array

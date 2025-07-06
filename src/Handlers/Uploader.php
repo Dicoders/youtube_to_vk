@@ -1,5 +1,8 @@
 <?php
 
+namespace App\Handlers;
+
+use Exception;
 use GuzzleHttp\Client;
 
 class Uploader implements IWorker
@@ -93,7 +96,7 @@ class Uploader implements IWorker
 
     public function getPriority(): int
     {
-        return 10;
+        return 20;
     }
 }
 

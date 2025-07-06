@@ -1,6 +1,6 @@
 <?php
 
-use GuzzleHttp\Client;
+namespace App\Handlers;
 
 
 class Clearer implements IWorker
@@ -24,7 +24,7 @@ class Clearer implements IWorker
 
     public function getPriority(): int
     {
-        return 40;
+        return 50;
     }
 }
 

@@ -1,5 +1,8 @@
 <?php
 
+namespace App\Handlers;
+
+use Exception;
 use GuzzleHttp\Client;
 
 class ImageDownloader implements IWorker
@@ -65,6 +68,6 @@ class ImageDownloader implements IWorker
 
     public function getPriority(): int
     {
-        return 30;
+        return 40;
     }
 }

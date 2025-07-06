@@ -1,5 +1,8 @@
 <?php
 
+use App\Handlers\Downloader;
+use App\Queue;
+
 require(dirname(__FILE__) . '/../vendor/autoload.php');
 
 
