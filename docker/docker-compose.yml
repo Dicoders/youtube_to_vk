@@ -8,5 +8,6 @@ services:
         env_file:
             - ./../.env
         volumes:
-            - ../:/app
+            - ../src:/app/src
+            - ../data/:/app/data/
             - ../docker/root.cron:/etc/crontabs/root
