@@ -7,7 +7,7 @@ use GuzzleHttp\Client;
 set_time_limit(0);
 
 require(dirname(__FILE__) . '/../vendor/autoload.php');
-$pdo = new PDO('sqlite:' . 'data/db/videos.db');
+$pdo = new PDO('sqlite:' . dirname(__FILE__).'/../data/db/videos.db');
 
 $queue = new Queue($pdo);
 
@@ -42,8 +42,8 @@ try {
     $client->post('/bot' . $_ENV['TG_BOT_TOKEN'] . '/sendMessage', [
         'form_params' => [
             'chat_id' => $_ENV['TG_CHAT_ID'],
-            'text' => 'Ошибка YoutubeToVK: ' . $t->getMessage(),
-            'parse_mode' => 'MarkdownV2'
+            'text' => 'Ошибка YoutubeToVK' . $t->getMessage(),
+            'parse_mode' => ''
         ],
     ]);
 } finally {

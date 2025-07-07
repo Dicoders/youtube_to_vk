@@ -27,5 +27,3 @@ class Clearer implements IWorker
         return 50;
     }
 }
-
-require(dirname(__FILE__) . '/../vendor/autoload.php');

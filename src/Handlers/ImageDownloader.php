@@ -13,9 +13,10 @@ class ImageDownloader implements IWorker
         $path_images = '/app/data/images/';
 
         $path = '/tmp/' . $task['video_id'] . '.jpg';
+        $remote_image_path = "https://i3.ytimg.com/vi/{$task['video_id']}/hqdefault.jpg";
 
         $client = new Client();
-        $response = $client->get("https://i3.ytimg.com/vi/{$task['video_id']}/hqdefault.jpg", [
+        $response = $client->get($remote_image_path, [
             'sink' => $path
         ]);
 
@@ -24,13 +25,8 @@ class ImageDownloader implements IWorker
         }
 
         $pathDest = $path_images . $task['vk_video_id'] . '.jpg';
-        try {
-            $this->cropImage($path, $pathDest, 0, 45, 480, 270);
-        } catch (\Throwable $th) {
-            echo $th->getMessage();
-            sleep(3600);
-            //todo отправить сообщение об ошибке
-        }
+
+        $this->cropImage($path, $pathDest, 0, 45, 480, 270);
 
         return [Clearer::class, $task];
     }
@@ -40,7 +36,7 @@ class ImageDownloader implements IWorker
         // Загружаем исходное изображение
         $srcImage = imagecreatefromjpeg($sourcePath);
         if (!$srcImage) {
-            die("Не удалось загрузить изображение.");
+            throw new Exception("Не удалось загрузить изображение.");
         }
 
         // Создаем пустое изображение для результата
@@ -51,19 +47,19 @@ class ImageDownloader implements IWorker
             $croppedImage, $srcImage,
             0, 0, $x, $y, $width, $height, $width, $height
         )) {
-            die("Ошибка при обрезке изображения.");
+            throw new Exception("Ошибка при обрезке изображения.");
         }
 
         // Сохраняем результат
         if (!imagejpeg($croppedImage, $destPath)) {
-            die("Ошибка при сохранении изображения.");
+            throw new Exception("Ошибка при сохранении изображения.");
         }
 
         // Освобождаем память
         imagedestroy($srcImage);
         imagedestroy($croppedImage);
 
-        echo "Изображение обрезано и сохранено в $destPath";
+        echo "Изображение обрезано и сохранено в $destPath \n";
     }
 
     public function getPriority(): int

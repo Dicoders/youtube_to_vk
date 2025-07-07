@@ -15,6 +15,7 @@
     "guzzlehttp/guzzle": "^7.9",
     "ext-sqlite3": "*",
     "ext-simplexml": "*",
-    "ext-pdo": "*"
+    "ext-pdo": "*",
+    "ext-gd": "*"
   }
 }

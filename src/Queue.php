@@ -2,6 +2,8 @@
 
 namespace App;
 
+use Throwable;
+
 class Queue
 {
     private \PDO $pdo;
@@ -33,16 +35,12 @@ class Queue
         $stmt->execute();
         $task = $stmt->fetch(\PDO::FETCH_ASSOC);
 
-        $this->approve($task['id']);
+        $update = $this->pdo->prepare("UPDATE queue SET processed = 1 WHERE id = :id");
+        $update->execute(['id' => $task['id']]);
+
         $payload = json_decode($task['payload'], true);
 
         return [$task['id'], $payload['class_handler'], $payload['data']];
-    }
-
-    public function approve(int $task_id): void
-    {
-        $update = $this->pdo->prepare("UPDATE queue SET processed = 1 WHERE id = :id");
-        $update->execute(['id' => $task_id]);
     }
 
     public function rollback(int $task_id): void
@@ -68,14 +66,14 @@ class Queue
 
             $rows = $this->pdo->query("SELECT changes()")->fetchColumn();
             if ($rows == 0) {
-                $this->pdo->rollBack();
+                $this->pdo->exec("ROLLBACK");
                 return false; // уже заблокировано
             }
 
-            $this->pdo->commit();
+            $this->pdo->exec("COMMIT");
             return true;
         } catch (Throwable $e) {
-            $this->pdo->rollBack();
+            $this->pdo->exec("ROLLBACK");
             return false;
         }
     }

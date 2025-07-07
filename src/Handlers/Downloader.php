@@ -43,7 +43,6 @@ class Downloader implements IWorker
             if ($returnCode === 0) {
                 return [Uploader::class, $task];
             } else {
-                sleep(3600);
                 throw new Exception("Error download video, code: $returnCode");
             }
         } else {

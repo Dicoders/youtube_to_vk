@@ -6,7 +6,7 @@ use App\Queue;
 require(dirname(__FILE__) . '/../vendor/autoload.php');
 
 
-$pdo = new PDO('sqlite:' . 'data/db/videos.db');
+$pdo = new PDO('sqlite:' . dirname(__FILE__).'/../data/db/videos.db');
 
 $queue = new Queue($pdo);
 
