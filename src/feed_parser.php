@@ -14,11 +14,17 @@ $queue = new Queue($pdo);
 $url = 'https://www.youtube.com/feeds/videos.xml?channel_id=' . $_ENV['YOUTUBE_CHANNEL_ID'];
 
 $xml = simplexml_load_file($url);
+$xml->registerXPathNamespace('media', 'http://search.yahoo.com/mrss/');
 
 foreach ($xml->entry as $item) {
     $id = str_replace('yt:video:', '', (string)$item->id[0]);
     $title = $item->title . ' 4k 60fps REUP';
-    $description = (string)((array)($item->children('http://search.yahoo.com/mrss/')->group->description))[0];
+    $views = (int)$item->xpath('.//media:statistics')[0]['views'];
+    $description = (string)$item->xpath('.//media:description')[0];
+
+    if ($views === 0) {
+        continue;
+    }
 
     $stmt = $pdo->prepare('select id from videos where video_id=:video_id');
     $stmt->execute([
