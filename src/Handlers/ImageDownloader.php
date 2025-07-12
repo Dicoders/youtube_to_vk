@@ -28,7 +28,7 @@ class ImageDownloader implements IWorker
 
         $this->cropImage($path, $pathDest, 0, 45, 480, 270);
 
-        return [Clearer::class, $task];
+        return [ImageUploader::class, $task];
     }
 
     private function cropImage($sourcePath, $destPath, $x, $y, $width, $height)
