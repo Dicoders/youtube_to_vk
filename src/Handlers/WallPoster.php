@@ -12,7 +12,7 @@ class WallPoster implements IWorker
     public function work(array $task): array
     {
         $client = new Client([
-            'base_uri' => 'https://api.vk.com',
+            'base_uri' => 'https://api.vk.ru',
             'headers' => [
                 'Authorization' => 'Bearer ' . $_ENV['VK_ACCESS_USER_TOKEN'],
                 'Content-Type' => 'application/x-www-form-urlencoded',

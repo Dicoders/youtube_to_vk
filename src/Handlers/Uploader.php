@@ -13,7 +13,7 @@ class Uploader implements IWorker
         $dir_save = '/app/data/downloads/';
 
         $client = new Client([
-            'base_uri' => 'https://api.vk.com',
+            'base_uri' => 'https://api.vk.ru',
             'headers' => [
                 'Authorization' => 'Bearer ' . $_ENV['VK_ACCESS_TOKEN'],
                 'Content-Type' => 'application/x-www-form-urlencoded',

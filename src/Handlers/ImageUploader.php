@@ -15,7 +15,7 @@ class ImageUploader implements IWorker
         if (file_exists($path_image)) {
 
             $client = new Client([
-                'base_uri' => 'https://api.vk.com',
+                'base_uri' => 'https://api.vk.ru',
                 'headers' => [
                     'Content-Type' => 'application/x-www-form-urlencoded',
                 ]
