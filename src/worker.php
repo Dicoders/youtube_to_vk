@@ -2,6 +2,7 @@
 
 use App\Handlers\IWorker;
 use App\Queue;
+use App\YoutubeChannels;
 use GuzzleHttp\Client;
 
 set_time_limit(0);
@@ -10,6 +11,7 @@ require(dirname(__FILE__) . '/../vendor/autoload.php');
 $pdo = new PDO('sqlite:' . dirname(__FILE__).'/../data/db/videos.db');
 
 $queue = new Queue($pdo);
+$youtubeChannels = new YoutubeChannels($pdo);
 
 if (empty($queue->size())) {
     echo "No jobs.\n";
@@ -27,7 +29,7 @@ try {
     [$task_id, $class_handler, $data] = $queue->pop();
 
     /** @var IWorker $class_handler */
-    $class = new $class_handler();
+    $class = new $class_handler($youtubeChannels);
     [$next_work, $data] = $class->work($data);
 
     if ($next_work) {

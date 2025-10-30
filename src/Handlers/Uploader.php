@@ -2,20 +2,28 @@
 
 namespace App\Handlers;
 
+use App\YoutubeChannels;
 use Exception;
 use GuzzleHttp\Client;
 
 class Uploader implements IWorker
 {
+    private YoutubeChannels $channels;
+
+    public function __construct(YoutubeChannels $channels)
+    {
+        $this->channels = $channels;
+    }
 
     public function work(array $task): array
     {
+        $channel = $this->channels->getChannelById($task['channel_id']);
         $dir_save = '/app/data/downloads/';
 
         $client = new Client([
             'base_uri' => 'https://api.vk.ru',
             'headers' => [
-                'Authorization' => 'Bearer ' . $_ENV['VK_ACCESS_TOKEN'],
+                'Authorization' => 'Bearer ' . $channel['vk_access_group_token'],
                 'Content-Type' => 'application/x-www-form-urlencoded',
             ]
         ]);
@@ -24,7 +32,7 @@ class Uploader implements IWorker
                 'v' => '5.199',
                 'name' => $task['title'],
                 'description' => $task['description'],
-                'group_id' => $_ENV['VK_GROUP_ID'],
+                'group_id' => $channel['vk_group_id'],
             ],
         ]);
 

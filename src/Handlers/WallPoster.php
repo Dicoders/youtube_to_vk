@@ -2,28 +2,37 @@
 
 namespace App\Handlers;
 
+use App\YoutubeChannels;
 use Exception;
 use GuzzleHttp\Client;
 
 
 class WallPoster implements IWorker
 {
+    private YoutubeChannels $channels;
+
+    public function __construct(YoutubeChannels $channels)
+    {
+        $this->channels = $channels;
+    }
 
     public function work(array $task): array
     {
+        $channel = $this->channels->getChannelById($task['channel_id']);
+
         $client = new Client([
             'base_uri' => 'https://api.vk.ru',
             'headers' => [
-                'Authorization' => 'Bearer ' . $_ENV['VK_ACCESS_USER_TOKEN'],
+                'Authorization' => 'Bearer ' . $channel['vk_access_user_token'],
                 'Content-Type' => 'application/x-www-form-urlencoded',
             ]
         ]);
         $response = $client->post('/method/wall.post', [
             'form_params' => [
                 'v' => '5.199',
-                'owner_id' => $_ENV['VK_OWNER_ID'],
+                'owner_id' => $channel['vk_owner_id'],
                 'from_group' => 1,
-                'attachments' => sprintf('video%s_%d', $_ENV['VK_OWNER_ID'], $task['vk_video_id']),
+                'attachments' => sprintf('video%s_%d', $channel['vk_owner_id'], $task['vk_video_id']),
             ],
         ]);
 

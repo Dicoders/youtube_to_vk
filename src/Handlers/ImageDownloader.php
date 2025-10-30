@@ -2,11 +2,15 @@
 
 namespace App\Handlers;
 
+use App\YoutubeChannels;
 use Exception;
 use GuzzleHttp\Client;
 
 class ImageDownloader implements IWorker
 {
+    public function __construct(YoutubeChannels $channels)
+    {
+    }
 
     public function work(array $task): array
     {

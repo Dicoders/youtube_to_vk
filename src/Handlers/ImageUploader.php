@@ -2,14 +2,23 @@
 
 namespace App\Handlers;
 
+use App\YoutubeChannels;
 use Exception;
 use GuzzleHttp\Client;
 
 class ImageUploader implements IWorker
 {
+    private YoutubeChannels $channels;
+
+    public function __construct(YoutubeChannels $channels)
+    {
+        $this->channels = $channels;
+    }
 
     public function work(array $task): array
     {
+        $channel = $this->channels->getChannelById($task['channel_id']);
+
         $path_image = '/app/data/images/' . $task['vk_video_id'] . '.jpg';
 
         if (file_exists($path_image)) {
@@ -23,8 +32,8 @@ class ImageUploader implements IWorker
             $response = $client->post('/method/video.getThumbUploadUrl', [
                 'form_params' => [
                     'v' => '5.199',
-                    'access_token' => $_ENV['VK_ACCESS_USER_TOKEN'],
-                    'owner_id' => $_ENV['VK_OWNER_ID'],
+                    'access_token' => $channel['vk_access_user_token'],
+                    'owner_id' => $channel['vk_owner_id'],
                 ],
             ]);
 
@@ -64,8 +73,8 @@ class ImageUploader implements IWorker
             $response = $client->post('/method/video.saveUploadedThumb', [
                 'form_params' => [
                     'v' => '5.199',
-                    'access_token' => $_ENV['VK_ACCESS_USER_TOKEN'],
-                    'owner_id' => $_ENV['VK_OWNER_ID'],
+                    'access_token' => $channel['vk_access_user_token'],
+                    'owner_id' => $channel['vk_owner_id'],
                     'thumb_json' => $json_data,
                     'video_id' => $task['vk_video_id'],
                     'set_thumb' => 1

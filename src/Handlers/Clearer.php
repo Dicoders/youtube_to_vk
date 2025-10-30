@@ -3,8 +3,13 @@
 namespace App\Handlers;
 
 
+use App\YoutubeChannels;
+
 class Clearer implements IWorker
 {
+    public function __construct(YoutubeChannels $channels)
+    {
+    }
 
     public function work(array $task): array
     {
