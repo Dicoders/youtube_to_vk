@@ -72,7 +72,7 @@ class Downloader implements IWorker
      *
      * @return int
      */
-    public function getPriority(): int
+    public static function getPriority(): int
     {
         return 10;
     }

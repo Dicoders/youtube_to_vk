@@ -66,7 +66,7 @@ class ImageDownloader implements IWorker
         echo "Изображение обрезано и сохранено в $destPath \n";
     }
 
-    public function getPriority(): int
+    public static function getPriority(): int
     {
         return 40;
     }

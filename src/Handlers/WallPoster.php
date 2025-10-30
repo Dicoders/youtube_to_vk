@@ -49,7 +49,7 @@ class WallPoster implements IWorker
         return [ImageDownloader::class, $task];
     }
 
-    public function getPriority(): int
+    public static function getPriority(): int
     {
         return 30;
     }

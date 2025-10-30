@@ -95,7 +95,7 @@ class ImageUploader implements IWorker
     }
 
 
-    public function getPriority(): int
+    public static function getPriority(): int
     {
         return 45;
     }

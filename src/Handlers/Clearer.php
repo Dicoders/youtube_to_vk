@@ -27,7 +27,7 @@ class Clearer implements IWorker
         return [null, null];
     }
 
-    public function getPriority(): int
+    public static function getPriority(): int
     {
         return 50;
     }

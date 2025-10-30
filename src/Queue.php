@@ -15,12 +15,10 @@ class Queue
 
     public function push(string $class, array $data): void
     {
-        $c = new $class();
-
         $stmt = $this->pdo->prepare("INSERT INTO queue (payload, priority) VALUES (:payload, :priority)");
         $stmt->execute([
             'payload' => json_encode(['class_handler' => $class, 'data' => $data]),
-            'priority' => $c->getPriority()
+            'priority' => $class::getPriority()
         ]);
     }
 

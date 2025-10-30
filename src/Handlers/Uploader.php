@@ -102,7 +102,7 @@ class Uploader implements IWorker
         return [WallPoster::class, $task];
     }
 
-    public function getPriority(): int
+    public static function getPriority(): int
     {
         return 20;
     }

@@ -9,5 +9,5 @@ interface IWorker
 
     public function work(array $task): array;
 
-    public function getPriority(): int;
+    public static function getPriority(): int;
 }
