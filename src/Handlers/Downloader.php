@@ -86,7 +86,7 @@ class Downloader implements IWorker
     private function buildCommand(string $videoId): string
     {
         return sprintf(
-            'yt-dlp -f 301-6/300-6/94-6/401+251/315+251/400+251/308+251 -o "%s%s.%%(ext)s" -N 1 -R 5 --cookies %s https://www.youtube.com/watch?v=%s',
+            'yt-dlp -f 401+251-5/301-6/300-6/94-6/401+251/315+251/400+251/308+251 -o "%s%s.%%(ext)s" -N 1 -R 5 --cookies %s https://www.youtube.com/watch?v=%s',
             self::DIR_SAVE,
             $videoId,
             self::PATH_FILE_COOKIES,
