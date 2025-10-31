@@ -25,6 +25,11 @@ foreach ($channels as $channel) {
         $views = (int)$item->xpath('.//media:statistics')[0]['views'];
         $description = (string)$item->xpath('.//media:description')[0];
 
+        $title = $item->title;
+        if (is_array($item->title)) {
+            $title = $item->title[0];
+        }
+
         if ($views === 0) {
             continue;
         }
@@ -39,7 +44,7 @@ foreach ($channels as $channel) {
             $stmt = $pdo->prepare('insert into videos (video_id,title,description, channel_id) values (:video_id,:title,:description, :channel_id)');
             $stmt->execute([
                 'video_id' => $id,
-                'title' => $item->title,
+                'title' => $title,
                 'description' => $description,
                 'channel_id' => $channel['id']
             ]);
@@ -47,7 +52,7 @@ foreach ($channels as $channel) {
             $task = [
                 'channel_id' => $channel['id'],
                 'video_id' => $id,
-                'title' => $item->title,
+                'title' => $title,
                 'description' => $description,
                 'vk_video_id' => 0,
                 'vk_post_id' => 0,
