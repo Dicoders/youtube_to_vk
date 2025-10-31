@@ -41,6 +41,25 @@ foreach ($channels as $channel) {
         $row = $stmt->fetch(SQLITE3_ASSOC);
 
         if (empty($row)) {
+            $duration = 0;
+            $process = proc_open(sprintf('yt-dlp -J https://www.youtube.com/watch?v=%s', $id), [
+                1 => ['pipe', 'w'], // stdout
+                2 => ['pipe', 'w'], // stderr
+            ], $pipes);
+
+            // Чтение вывода процесса
+            while (($line = fgets($pipes[1])) !== false) {
+                $resp = json_decode($line, true);
+                $duration = $resp['duration'];
+            }
+
+            fclose($pipes[1]);
+            fclose($pipes[2]);
+
+            if ($duration < 120) { //Не выкачиваем видео меньше 2х минут
+                continue;
+            }
+
             $stmt = $pdo->prepare('insert into videos (video_id,title,description, channel_id) values (:video_id,:title,:description, :channel_id)');
             $stmt->execute([
                 'video_id' => $id,
