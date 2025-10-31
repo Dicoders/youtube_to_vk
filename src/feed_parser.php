@@ -24,11 +24,7 @@ foreach ($channels as $channel) {
         $id = str_replace('yt:video:', '', (string)$item->id[0]);
         $views = (int)$item->xpath('.//media:statistics')[0]['views'];
         $description = (string)$item->xpath('.//media:description')[0];
-
-        $title = $item->title;
-        if (is_array($item->title)) {
-            $title = $item->title[0];
-        }
+        $title = (string)$item->xpath('.//media:title')[0];
 
         if ($views === 0) {
             continue;
