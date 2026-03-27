@@ -2,7 +2,8 @@
 
 namespace App\Handlers;
 
-
+use App\Config;
+use App\Task;
 use App\YoutubeChannels;
 
 class Clearer implements IWorker
@@ -11,15 +12,13 @@ class Clearer implements IWorker
     {
     }
 
-    public function work(array $task): array
+    public function work(Task $task): array
     {
-        $dir_save = '/app/data/downloads/';
-
-        $files = glob($dir_save . $task['video_id'] . '*');
+        $files = glob(Config::DIR_DOWNLOADS . $task->video_id . '*');
 
         foreach ($files as $file) {
             if (is_file($file)) {
-                unlink($file); // Удаляем файл
+                unlink($file);
                 echo "Удален: $file\n";
             }
         }

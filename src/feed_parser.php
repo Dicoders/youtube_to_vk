@@ -2,6 +2,7 @@
 
 use App\Handlers\Downloader;
 use App\Queue;
+use App\Task;
 use App\YoutubeChannels;
 
 require(dirname(__FILE__) . '/../vendor/autoload.php');
@@ -72,14 +73,12 @@ foreach ($channels as $channel) {
                 'channel_id' => $channel['id']
             ]);
 
-            $task = [
-                'channel_id' => $channel['id'],
-                'video_id' => $id,
-                'title' => $title,
-                'description' => $description,
-                'vk_video_id' => 0,
-                'vk_post_id' => 0,
-            ];
+            $task = new Task(
+                channel_id:  $channel['id'],
+                video_id:    $id,
+                title:       $title,
+                description: $description,
+            );
 
             $queue->push(Downloader::class, $task);
         }

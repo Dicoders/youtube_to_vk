@@ -2,10 +2,10 @@
 
 namespace App\Handlers;
 
+use App\Task;
 use App\YoutubeChannels;
 use Exception;
 use GuzzleHttp\Client;
-
 
 class WallPoster implements IWorker
 {
@@ -16,23 +16,24 @@ class WallPoster implements IWorker
         $this->channels = $channels;
     }
 
-    public function work(array $task): array
+    public function work(Task $task): array
     {
-        $channel = $this->channels->getChannelById($task['channel_id']);
+        $channel = $this->channels->getChannelById($task->channel_id);
 
         $client = new Client([
             'base_uri' => 'https://api.vk.ru',
-            'headers' => [
+            'headers'  => [
                 'Authorization' => 'Bearer ' . $channel['vk_access_user_token'],
-                'Content-Type' => 'application/x-www-form-urlencoded',
-            ]
+                'Content-Type'  => 'application/x-www-form-urlencoded',
+            ],
         ]);
+
         $response = $client->post('/method/wall.post', [
             'form_params' => [
-                'v' => '5.199',
-                'owner_id' => $channel['vk_owner_id'],
-                'from_group' => 1,
-                'attachments' => sprintf('video%s_%d', $channel['vk_owner_id'], $task['vk_video_id']),
+                'v'           => '5.199',
+                'owner_id'    => $channel['vk_owner_id'],
+                'from_group'  => 1,
+                'attachments' => sprintf('video%s_%d', $channel['vk_owner_id'], $task->vk_video_id),
             ],
         ]);
 
@@ -40,13 +41,10 @@ class WallPoster implements IWorker
             throw new Exception('Ошибка создания поста. статус ' . $response->getStatusCode());
         }
 
-        $content = $response->getBody()->getContents();
-        $content = json_decode($content, true);
-
+        $content    = json_decode($response->getBody()->getContents(), true);
         $vk_post_id = $content['response']['post_id'];
-        $task['vk_post_id'] = $vk_post_id;
 
-        return [ImageDownloader::class, $task];
+        return [ImageDownloader::class, $task->withVkPostId($vk_post_id)];
     }
 
     public static function getPriority(): int
@@ -54,4 +52,3 @@ class WallPoster implements IWorker
         return 30;
     }
 }
-

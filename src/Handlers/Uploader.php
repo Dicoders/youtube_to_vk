@@ -2,6 +2,8 @@
 
 namespace App\Handlers;
 
+use App\Config;
+use App\Task;
 use App\YoutubeChannels;
 use Exception;
 use GuzzleHttp\Client;
@@ -15,24 +17,24 @@ class Uploader implements IWorker
         $this->channels = $channels;
     }
 
-    public function work(array $task): array
+    public function work(Task $task): array
     {
-        $channel = $this->channels->getChannelById($task['channel_id']);
-        $dir_save = '/app/data/downloads/';
+        $channel = $this->channels->getChannelById($task->channel_id);
 
         $client = new Client([
             'base_uri' => 'https://api.vk.ru',
-            'headers' => [
+            'headers'  => [
                 'Authorization' => 'Bearer ' . $channel['vk_access_group_token'],
-                'Content-Type' => 'application/x-www-form-urlencoded',
-            ]
+                'Content-Type'  => 'application/x-www-form-urlencoded',
+            ],
         ]);
+
         $response = $client->post('/method/video.save', [
             'form_params' => [
-                'v' => '5.199',
-                'name' => $task['title'],
-                'description' => $task['description'],
-                'group_id' => $channel['vk_group_id'],
+                'v'           => '5.199',
+                'name'        => $task->title,
+                'description' => $task->description,
+                'group_id'    => $channel['vk_group_id'],
             ],
         ]);
 
@@ -40,52 +42,41 @@ class Uploader implements IWorker
             throw new Exception('Ошибка получения ссылки для загрузки видео');
         }
 
-        $content = $response->getBody()->getContents();
-        $content = json_decode($content, true);
-
+        $content = json_decode($response->getBody()->getContents(), true);
         if (isset($content['error'])) {
             throw new Exception($content['error']['error_msg']);
         }
 
         $vk_video_id = $content['response']['video_id'];
-        $upload_url = $content['response']['upload_url'];
+        $upload_url  = $content['response']['upload_url'];
 
         $path_file = null;
         $file_name = null;
-        $formats = ['mp4', 'mov', 'avi', 'wmv', 'flv', '3gp', 'webm', 'mkv'];
-
-        foreach ($formats as $format) {
-            $file_name = $task['video_id'] . '.' . $format;
-            $path = $dir_save . $file_name;
-            $exist = file_exists($path);
-            if ($exist) {
+        foreach (['mp4', 'mov', 'avi', 'wmv', 'flv', '3gp', 'webm', 'mkv'] as $format) {
+            $file_name = $task->video_id . '.' . $format;
+            $path = Config::DIR_DOWNLOADS . $file_name;
+            if (file_exists($path)) {
                 $path_file = $path;
                 break;
             }
         }
 
         if (is_null($path_file)) {
-            return []; //не найдено видео для загрузки в ВК
+            return [null, null];
         }
 
         $lastPercent = 0.0;
         $client2 = new Client();
         $response = $client2->post($upload_url, [
             'multipart' => [
-                [
-                    'name' => 'file',
-                    'contents' => fopen($path_file, 'r'),
-                    'filename' => $file_name
-                ],
-                [
-                    'name' => 'key',
-                    'contents' => 'value',
-                ],
+                ['name' => 'file', 'contents' => fopen($path_file, 'r'), 'filename' => $file_name],
+                ['name' => 'key',  'contents' => 'value'],
             ],
             'progress' => function ($downloadTotal, $downloaded, $uploadTotal, $uploaded) use (&$lastPercent) {
                 if ($uploadTotal > 0) {
                     $percent = round(($uploaded / $uploadTotal) * 100, 1);
                     if ($percent !== $lastPercent) {
+                        $lastPercent = $percent;
                         echo "Uploaded: $percent%\r";
                     }
                 }
@@ -96,10 +87,7 @@ class Uploader implements IWorker
             throw new Exception('Ошибка загрузки видео в ВК. Статус ' . $response->getStatusCode());
         }
 
-        $task['vk_video_id'] = $vk_video_id;
-
-        //Отправляем сообщение
-        return [WallPoster::class, $task];
+        return [WallPoster::class, $task->withVkVideoId($vk_video_id)];
     }
 
     public static function getPriority(): int
@@ -107,4 +95,3 @@ class Uploader implements IWorker
         return 20;
     }
 }
-

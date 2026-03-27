@@ -2,6 +2,8 @@
 
 namespace App\Handlers;
 
+use App\Config;
+use App\Task;
 use App\YoutubeChannels;
 use Exception;
 use GuzzleHttp\Client;
@@ -15,25 +17,22 @@ class ImageUploader implements IWorker
         $this->channels = $channels;
     }
 
-    public function work(array $task): array
+    public function work(Task $task): array
     {
-        $channel = $this->channels->getChannelById($task['channel_id']);
-
-        $path_image = '/app/data/images/' . $task['vk_video_id'] . '.jpg';
+        $channel    = $this->channels->getChannelById($task->channel_id);
+        $path_image = Config::DIR_IMAGES . $task->vk_video_id . '.jpg';
 
         if (file_exists($path_image)) {
-
             $client = new Client([
                 'base_uri' => 'https://api.vk.ru',
-                'headers' => [
-                    'Content-Type' => 'application/x-www-form-urlencoded',
-                ]
+                'headers'  => ['Content-Type' => 'application/x-www-form-urlencoded'],
             ]);
+
             $response = $client->post('/method/video.getThumbUploadUrl', [
                 'form_params' => [
-                    'v' => '5.199',
+                    'v'            => '5.199',
                     'access_token' => $channel['vk_access_user_token'],
-                    'owner_id' => $channel['vk_owner_id'],
+                    'owner_id'     => $channel['vk_owner_id'],
                 ],
             ]);
 
@@ -41,27 +40,19 @@ class ImageUploader implements IWorker
                 throw new Exception('Ошибка получения ссылки для загрузки изображения');
             }
 
-            $content = $response->getBody()->getContents();
-            $content = json_decode($content, true);
+            $content = json_decode($response->getBody()->getContents(), true);
             if (isset($content['error'])) {
                 throw new Exception($content['error']['error_msg']);
             }
 
             $upload_url = $content['response']['upload_url'];
 
-            $client2 = new Client();
+            $client2  = new Client();
             $response = $client2->post($upload_url, [
                 'multipart' => [
-                    [
-                        'name' => 'file',
-                        'contents' => fopen($path_image, 'r'),
-                        'filename' => $task['vk_video_id'] . '.jpg'
-                    ],
-                    [
-                        'name' => 'key',
-                        'contents' => 'value',
-                    ],
-                ]
+                    ['name' => 'file', 'contents' => fopen($path_image, 'r'), 'filename' => $task->vk_video_id . '.jpg'],
+                    ['name' => 'key',  'contents'  => 'value'],
+                ],
             ]);
 
             if ($response->getStatusCode() !== 200) {
@@ -72,28 +63,27 @@ class ImageUploader implements IWorker
 
             $response = $client->post('/method/video.saveUploadedThumb', [
                 'form_params' => [
-                    'v' => '5.199',
+                    'v'            => '5.199',
                     'access_token' => $channel['vk_access_user_token'],
-                    'owner_id' => $channel['vk_owner_id'],
-                    'thumb_json' => $json_data,
-                    'video_id' => $task['vk_video_id'],
-                    'set_thumb' => 1
+                    'owner_id'     => $channel['vk_owner_id'],
+                    'thumb_json'   => $json_data,
+                    'video_id'     => $task->vk_video_id,
+                    'set_thumb'    => 1,
                 ],
             ]);
 
             if ($response->getStatusCode() !== 200) {
                 throw new Exception('Ошибка установки изображения для видео');
             }
-            $content = $response->getBody()->getContents();
-            $content = json_decode($content, true);
+
+            $content = json_decode($response->getBody()->getContents(), true);
             if (isset($content['error'])) {
                 throw new Exception($content['error']['error_msg']);
             }
-
         }
+
         return [Clearer::class, $task];
     }
-
 
     public static function getPriority(): int
     {

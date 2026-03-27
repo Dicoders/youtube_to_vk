@@ -2,16 +2,15 @@
 
 $db = new PDO('sqlite:' . dirname(__FILE__) . '/../data/db/videos.db');
 
-//Создаем базу если её нет
 $db->exec('CREATE TABLE IF NOT EXISTS videos (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        channel_id INTEGER,
-        video_id TEXT NOT NULL UNIQUE,
-        title TEXT,
-        description TEXT,
-        vk_video_id INTEGER,
-        vk_post_id INTEGER
-    );');
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    channel_id INTEGER,
+    video_id TEXT NOT NULL UNIQUE,
+    title TEXT,
+    description TEXT,
+    vk_video_id INTEGER,
+    vk_post_id INTEGER
+);');
 
 $db->exec('CREATE TABLE IF NOT EXISTS worker_lock (
     id INTEGER PRIMARY KEY CHECK (id = 1),
@@ -23,6 +22,8 @@ $db->exec('CREATE TABLE IF NOT EXISTS queue (
     payload TEXT NOT NULL,
     processed INTEGER DEFAULT 0,
     priority INTEGER DEFAULT 0,
+    attempts INTEGER DEFAULT 0,
+    failed INTEGER DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );');
 
@@ -35,3 +36,12 @@ $db->exec('CREATE TABLE IF NOT EXISTS youtube_channels
     vk_access_group_token STRING(250),
     vk_access_user_token  STRING(250)
 );');
+
+// Миграция существующих БД — добавляем колонки если их нет
+foreach (['attempts INTEGER DEFAULT 0', 'failed INTEGER DEFAULT 0'] as $column) {
+    try {
+        $db->exec("ALTER TABLE queue ADD COLUMN $column");
+    } catch (\Exception $e) {
+        // Колонка уже существует
+    }
+}
