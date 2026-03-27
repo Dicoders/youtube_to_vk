@@ -73,9 +73,10 @@ class Uploader implements IWorker
         $response     = null;
 
         for ($attempt = 1; $attempt <= Config::RETRIES_UPLOAD; $attempt++) {
+            $offset = $lastUploaded;
             $handle = fopen($path_file, 'r');
-            if ($lastUploaded > 0) {
-                fseek($handle, $lastUploaded);
+            if ($offset > 0) {
+                fseek($handle, $offset);
             }
 
             $options = [
@@ -83,13 +84,13 @@ class Uploader implements IWorker
                     ['name' => 'file', 'contents' => $handle, 'filename' => $file_name],
                     ['name' => 'key',  'contents' => 'value'],
                 ],
-                'progress' => function ($downloadTotal, $downloaded, $uploadTotal, $uploaded) use (&$lastPercent, &$lastUploaded) {
+                'progress' => function ($downloadTotal, $downloaded, $uploadTotal, $uploaded) use (&$lastPercent, &$lastUploaded, $offset) {
                     if ($uploadTotal > 0) {
-                        $lastUploaded = $uploaded;
-                        $percent = round(($uploaded / $uploadTotal) * 100, 1);
+                        $lastUploaded = $offset + $uploaded;
+                        $percent = round(($lastUploaded / ($uploadTotal + $offset)) * 100, 1);
                         if ($percent !== $lastPercent) {
                             $lastPercent = $percent;
-                            echo "Uploaded: $percent%\r";
+                            echo "Uploaded: $percent%\n";
                         }
                     }
                 },
@@ -109,7 +110,8 @@ class Uploader implements IWorker
                 if ($attempt === Config::RETRIES_UPLOAD) {
                     throw $e;
                 }
-                echo "Попытка $attempt не удалась, дозагрузка с байта $lastUploaded...\n";
+                $percent = $fileSize > 0 ? round(($lastUploaded / $fileSize) * 100, 1) : 0;
+                echo "Попытка $attempt не удалась, дозагрузка с $percent%\n";
             }
         }
 
