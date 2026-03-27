@@ -10,4 +10,5 @@ class Config
 
     public const int LOCK_TIMEOUT_SECONDS = 60 * 60 * 2; // 2 часа — после этого лок считается зависшим
     public const int MAX_ATTEMPTS         = 20;
+    public const int RETRIES_UPLOAD       = 20;
 }
