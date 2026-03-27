@@ -38,6 +38,7 @@ foreach ($channels as $channel) {
 
         if (empty($row)) {
             $duration = 0;
+            $is_live_stream = false;
             $process = proc_open(sprintf('yt-dlp -J https://www.youtube.com/watch?v=%s', $id), [
                 1 => ['pipe', 'w'], // stdout
                 2 => ['pipe', 'w'], // stderr
@@ -47,12 +48,19 @@ foreach ($channels as $channel) {
             while (($line = fgets($pipes[1])) !== false) {
                 $resp = json_decode($line, true);
                 $duration = $resp['duration'];
+                $is_live_stream = $resp['live_status'] === 'is_live';
             }
 
             fclose($pipes[1]);
             fclose($pipes[2]);
 
-            if ($duration < 120) { //Не выкачиваем видео меньше 2х минут
+            //Не выкачиваем видео меньше 2х минут
+            if ($duration < 120) {
+                continue;
+            }
+
+            //Не пытаемся выкачивать если это онлайн стрим
+            if ($is_live_stream) {
                 continue;
             }
 
