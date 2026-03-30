@@ -8,9 +8,9 @@ use GuzzleHttp\Client;
 set_time_limit(0);
 
 require(dirname(__FILE__) . '/../vendor/autoload.php');
-$pdo = new PDO('sqlite:' . dirname(__FILE__).'/../data/db/videos.db');
+$pdo = new PDO('sqlite:' . dirname(__FILE__) . '/../data/db/videos.db');
 
-$queue          = new Queue($pdo);
+$queue = new Queue($pdo);
 $youtubeChannels = new YoutubeChannels($pdo);
 
 if (empty($queue->size())) {
@@ -38,20 +38,21 @@ try {
     $queue->rollback($task_id);
 
     $isFinal = $queue->isFailed($task_id);
-    $prefix  = $isFinal
+    $prefix = $isFinal
         ? 'YoutubeToVK ОКОНЧАТЕЛЬНАЯ ОШИБКА (исчерпаны попытки)'
         : 'YoutubeToVK ошибка (retry)';
 
     echo $t->getMessage() . "\n";
-
-    $client = new Client(['base_uri' => 'https://api.telegram.org']);
-    $client->post('/bot' . $_ENV['TG_BOT_TOKEN'] . '/sendMessage', [
-        'form_params' => [
-            'chat_id'    => $_ENV['TG_CHAT_ID'],
-            'text'       => $prefix . ': ' . $t->getMessage(),
-            'parse_mode' => '',
-        ],
-    ]);
+    if ($isFinal) {
+        $client = new Client(['base_uri' => 'https://api.telegram.org']);
+        $client->post('/bot' . $_ENV['TG_BOT_TOKEN'] . '/sendMessage', [
+            'form_params' => [
+                'chat_id' => $_ENV['TG_CHAT_ID'],
+                'text' => $prefix . ': ' . $t->getMessage(),
+                'parse_mode' => '',
+            ],
+        ]);
+    }
 } finally {
     $queue->releaseLock();
 }

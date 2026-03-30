@@ -7,7 +7,6 @@ use App\Task;
 use App\YoutubeChannels;
 use Exception;
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\TransferException;
 
 class Uploader implements IWorker
 {
@@ -66,54 +65,23 @@ class Uploader implements IWorker
             return [null, null];
         }
 
-        $client2      = new Client();
-        $fileSize     = filesize($path_file);
-        $lastUploaded = 0;
-        $lastPercent  = 0.0;
-        $response     = null;
-
-        for ($attempt = 1; $attempt <= Config::RETRIES_UPLOAD; $attempt++) {
-            $offset = $lastUploaded;
-            $handle = fopen($path_file, 'r');
-            if ($offset > 0) {
-                fseek($handle, $offset);
-            }
-
-            $options = [
-                'multipart' => [
-                    ['name' => 'file', 'contents' => $handle, 'filename' => $file_name],
-                    ['name' => 'key',  'contents' => 'value'],
-                ],
-                'progress' => function ($downloadTotal, $downloaded, $uploadTotal, $uploaded) use (&$lastPercent, &$lastUploaded, $offset) {
-                    if ($uploadTotal > 0) {
-                        $lastUploaded = $offset + $uploaded;
-                        $percent = round(($lastUploaded / ($uploadTotal + $offset)) * 100, 1);
-                        if ($percent !== $lastPercent) {
-                            $lastPercent = $percent;
-                            echo "Uploaded: $percent%\n";
-                        }
+        $lastPercent = 0.0;
+        $client2 = new Client();
+        $response = $client2->post($upload_url, [
+            'multipart' => [
+                ['name' => 'file', 'contents' => fopen($path_file, 'r'), 'filename' => $file_name],
+                ['name' => 'key',  'contents' => 'value'],
+            ],
+            'progress' => function ($downloadTotal, $downloaded, $uploadTotal, $uploaded) use (&$lastPercent) {
+                if ($uploadTotal > 0) {
+                    $percent = round(($uploaded / $uploadTotal) * 100, 1);
+                    if ($percent !== $lastPercent) {
+                        $lastPercent = $percent;
+                        echo "Uploaded: $percent%\r";
                     }
-                },
-            ];
-
-            if ($lastUploaded > 0) {
-                $options['headers'] = [
-                    'Content-Range' => "bytes $lastUploaded-" . ($fileSize - 1) . "/$fileSize",
-                ];
-            }
-
-            try {
-                $response = $client2->post($upload_url, $options);
-                break;
-            } catch (TransferException $e) {
-                fclose($handle);
-                if ($attempt === Config::RETRIES_UPLOAD) {
-                    throw $e;
                 }
-                $percent = $fileSize > 0 ? round(($lastUploaded / $fileSize) * 100, 1) : 0;
-                echo "Попытка $attempt не удалась, дозагрузка с $percent%\n";
-            }
-        }
+            },
+        ]);
 
         if (!in_array($response->getStatusCode(), [200, 201])) {
             throw new Exception('Ошибка загрузки видео в ВК. Статус ' . $response->getStatusCode());
