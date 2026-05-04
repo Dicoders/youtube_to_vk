@@ -35,6 +35,8 @@ class Uploader implements IWorker
                 'name'        => $task->title,
                 'description' => $task->description,
                 'group_id'    => $channel['vk_group_id'],
+                'privacy_view' => $channel['privacy_view'] ?? 'all',
+                'donut_level_id' => $channel['donut_level_id'] ?? 0
             ],
         ]);
 
